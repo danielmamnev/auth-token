@@ -27,6 +27,9 @@ function Auth() {
     },
   };
 
+  const signOutHandler = () => {
+    firebase.auth().signOut();
+  };
   console.log(firebase.auth().currentUser);
   return (
     <div className="container">
