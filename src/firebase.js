@@ -1,6 +1,6 @@
 import firebase from 'firebase';
 
-const config = {
+export const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.REACT_APP_FIREBASE_DATA_URL,
@@ -11,4 +11,11 @@ const config = {
 
 firebase.initializeApp(config);
 
-export { firebase, config as default };
+export function signIn() {
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+}
+export function signOut() {
+  firebase.auth().signOut();
+}
+
+export default firebase;
