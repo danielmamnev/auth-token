@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import firebase from 'firebase';
 export default function Dashboard() {
   const [show, setShow] = useState(false);
 
@@ -12,6 +13,7 @@ export default function Dashboard() {
   };
   return (
     <div>
+      {console.log(firebase.auth().currentUser.displayName)}
       <Button variant="primary" onClick={showModal}>
         New Contact
       </Button>
