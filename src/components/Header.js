@@ -1,5 +1,4 @@
 import React from 'react';
-import Auth from '../Auth';
 import Navbar from 'react-bootstrap/Navbar';
 import SignIn from './firebase/SignIn';
 

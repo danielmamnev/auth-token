@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import firebase, { signIn, signOut } from '../firebase';
+import firebase from '../firebase';
 import { connect } from 'react-redux';
 
 function Home({ auth, dispatch }) {
+  const [show, setShow] = useState(false);
+  const [contact, setContact] = useState({
+    firstname: '',
+    lastname: '',
+    phone: '',
+    email: '',
+    profession: '',
+  });
   useEffect(() => {
     return firebase
       .auth()
@@ -12,39 +21,92 @@ function Home({ auth, dispatch }) {
         dispatch({ type: 'AUTH_USER', payload: user })
       );
   }, []);
-  const [show, setShow] = useState(false);
 
-  const showModal = () => {
-    setShow(true);
+  const onChange = (e) => {
+    setContact({ ...contact, [e.target.name]: e.target.value });
   };
-  const closeModal = () => {
-    setShow(false);
-  };
+
+  const createContact = () => {};
+
   if (auth.user) {
     return (
       <div className="container">
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-sm-6">
             <p className="m-4">Contact List</p>
           </div>
-          <div className="col-md-6 text-center">
-            <Button className="m-4" variant="primary" onClick={showModal}>
+          <div className="col-sm-6 text-center">
+            <Button
+              className="m-4"
+              variant="primary"
+              onClick={() => {
+                setShow(true);
+              }}
+            >
               New Contact
             </Button>
             <Modal show={show}>
               <Modal.Header closeButton>
-                <Modal.Title>New Customer</Modal.Title>
+                <Modal.Title>New Contact</Modal.Title>
               </Modal.Header>
 
               <Modal.Body>
-                <p>Modal body text goes here.</p>
+                <Form>
+                  <Form.Group controlId="firstname">
+                    <Form.Label>First Name</Form.Label>
+                    <Form.Control
+                      name="firstname"
+                      onChange={onChange}
+                      value={contact.firstname}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="lastname">
+                    <Form.Label>Last Name</Form.Label>
+                    <Form.Control
+                      name="lastname"
+                      onChange={onChange}
+                      value={contact.lastname}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="phone">
+                    <Form.Label>Phone Number</Form.Label>
+                    <Form.Control
+                      name="phone"
+                      onChange={onChange}
+                      value={contact.phone}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="email">
+                    <Form.Label>Email Address</Form.Label>
+                    <Form.Control
+                      name="email"
+                      onChange={onChange}
+                      value={contact.email}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="profession">
+                    <Form.Label>Profession/Industry</Form.Label>
+                    <Form.Control
+                      name="profession"
+                      onChange={onChange}
+                      value={contact.profession}
+                    />
+                  </Form.Group>
+                </Form>
               </Modal.Body>
 
               <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShow(false);
+                  }}
+                >
                   Close
                 </Button>
-                <Button variant="primary">Save changes</Button>
+                <Button variant="primary" onClick={createContact}>
+                  Save changes
+                </Button>
               </Modal.Footer>
             </Modal>
           </div>

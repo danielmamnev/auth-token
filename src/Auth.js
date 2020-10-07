@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 //import firebase from './firebase'
 import firebase from 'firebase';
-import config from './firebase';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 import Button from 'react-bootstrap/Button';
 
@@ -27,9 +26,6 @@ function Auth() {
     },
   };
 
-  const signOutHandler = () => {
-    firebase.auth().signOut();
-  };
   console.log(firebase.auth().currentUser);
   return (
     <div className="container">

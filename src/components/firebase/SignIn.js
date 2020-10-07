@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import Button from 'react-bootstrap/Button';
-import firebase, { signIn, signOut, storage } from '../../firebase';
+import firebase, { signIn, signOut } from '../../firebase';
 
 function SignIn({ auth, dispatch }) {
   const [newUser, setNewUser] = useState(false);
@@ -14,17 +14,16 @@ function SignIn({ auth, dispatch }) {
   }, []);
 
   function verifyUser() {
-    console.log('uid1', auth.user.uid);
-    var docRef = firebase.firestore().collection('contacts').doc(auth.user.uid);
+    var docRef = firebase.firestore().collection('users').doc(auth.user.uid);
     docRef
       .get()
       .then(function (doc) {
         if (doc.exists) {
-          console.log('Document data:', doc.data());
+          // console.log('Document data:', doc.data());
         } else {
           // doc.data() will be undefined in this case
-          firebase.firestore().collection('contacts').doc(auth.user.uid).set({
-            firstname: 'dongus',
+          firebase.firestore().collection('users').doc(auth.user.uid).set({
+            firstname: auth.user.displayName,
           });
           setNewUser(true);
           console.log('Welcome First Timer!');
@@ -40,17 +39,20 @@ function SignIn({ auth, dispatch }) {
     return (
       <>
         {newUser ? (
-          <h1 newUser={newUser}>Welcome first timer </h1>
+          <h3 newUser={newUser} className="pr-4">
+            Congratulations on joining Auth-Token!
+          </h3>
         ) : (
-          <div>
-            <img src={auth.user.photoURL} height="60" />
-            <div className="p-4">
-              {auth.user.displayName}
-              {/* {console.log('auth', auth.user)} */}
-            </div>
-            <Button onClick={signOut}>Sign Out</Button>
-          </div>
+          ''
         )}
+        <div className="d-flex mt-auto">
+          <img alt="profile" src={auth.user.photoURL} height="30" />
+          <p className="pl-2 pr-2">
+            {auth.user.displayName}
+            {/* {console.log('auth', auth.user)} */}
+          </p>
+          <Button onClick={signOut}>Sign Out</Button>
+        </div>
       </>
     );
   } else {
