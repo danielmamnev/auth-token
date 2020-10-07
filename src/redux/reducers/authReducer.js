@@ -6,7 +6,6 @@ export default (state = { user: null }, action) => {
         user: action.payload,
       };
     default:
-      console.log('default');
   }
   return state;
 };

@@ -4,15 +4,18 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import firebase from '../firebase';
 import { connect } from 'react-redux';
+import ContactList from '../components/ContactList';
 
 function Home({ auth, dispatch }) {
   const [show, setShow] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [contact, setContact] = useState({
     firstname: '',
     lastname: '',
     phone: '',
     email: '',
     profession: '',
+    owner: '',
   });
   useEffect(() => {
     return firebase
@@ -26,14 +29,55 @@ function Home({ auth, dispatch }) {
     setContact({ ...contact, [e.target.name]: e.target.value });
   };
 
-  const createContact = () => {};
+  const createContact = () => {
+    const ref = firebase
+      .firestore()
+      .collection('users')
+      .doc(auth.user.uid)
+      .collection('contacts')
+      .doc();
+    console.log('ref.id', ref.id);
+
+    ref
+      .set({
+        firstname: contact.firstname,
+        lastname: contact.lastname,
+        phone: contact.phone,
+        email: contact.email,
+        profession: contact.profession,
+        owner: contact.owner,
+        id: ref.id,
+      })
+      .then(() => {
+        console.log('Contact Succesfully Created', ref.id);
+      })
+      .then(setSuccess(true));
+    // var db_contact = firebase.firestore().collection('users').doc(auth.user.uid).collection('contacts').where("firstname", "==", contact.firstname)
+    setContact({
+      firstname: '',
+      lastname: '',
+      phone: '',
+      email: '',
+      profession: '',
+    });
+  };
 
   if (auth.user) {
+    // firebase
+    //   .firestore()
+    //   .collection('users')
+    //   .doc(auth.user.uid)
+    //   .collection('contacts')
+    //   .get()
+    //   .then((snapshot) => {
+    //     console.log(snapshot);
+    //   });
+
     return (
       <div className="container">
         <div className="row">
           <div className="col-sm-6">
-            <p className="m-4">Contact List</p>
+            <ContactList />
           </div>
           <div className="col-sm-6 text-center">
             <Button
@@ -41,6 +85,9 @@ function Home({ auth, dispatch }) {
               variant="primary"
               onClick={() => {
                 setShow(true);
+                setContact({
+                  owner: auth.user.uid,
+                });
               }}
             >
               New Contact
@@ -96,6 +143,7 @@ function Home({ auth, dispatch }) {
               </Modal.Body>
 
               <Modal.Footer>
+                {success ? <p>Customer Created!</p> : <p></p>}
                 <Button
                   variant="secondary"
                   onClick={() => {
