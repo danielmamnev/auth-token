@@ -10,14 +10,13 @@ import reducers from './redux/reducers/rootReducer';
 import Home from './pages/Home';
 import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
-import SignIn from './components/firebase/SignIn';
 
 const store = createStore(reducers, {}, applyMiddleware(reduxThunk));
 
 function App() {
   return (
     <Provider store={store}>
-      <SignIn />
+      <Header />
       <Router>
         <div className="App">
           <Switch>
