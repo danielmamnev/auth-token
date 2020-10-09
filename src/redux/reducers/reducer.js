@@ -1,6 +1,6 @@
 export default (state = { contacts: null }, action) => {
   switch (action.type) {
-    case 'AUTH_USER':
+    case 'LOAD_CONTACTS':
       return {
         ...state,
         contacts: action.payload,

@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import firebase from 'firebase';
 import { connect } from 'react-redux';
+import { Card } from 'react-bootstrap';
 
-function ContactList({ auth }) {
-  const [contacts, setContacts] = useState([]);
-  var db = firebase.firestore();
+function ContactList({ auth, contacts }) {
+  const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    db.collection(`users/${auth.user.uid}/contacts`)
-      .get()
-      .then((snapshot) => {
-        const data = snapshot.docs.map((d) => d.data());
-        setContacts(data);
-      });
-  }, []);
-  return (
-    <>
-      {contacts.map((contact, i) => (
-        <div key={i}>{contact.firstname}</div>
-      ))}
-    </>
-  );
+  if (contacts == null) {
+    return <div className="p-4">...Loading Contacts...</div>;
+  } else {
+    return (
+      <div className="p-4">
+        {contacts.map((contact, i) => (
+          <Card key={i}>
+            <Card.Header>
+              {contact.firstname} {contact.lastname}
+            </Card.Header>
+            <Card.Body>{contact.phone}</Card.Body>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 }
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
+  contacts: state.data.contacts,
 });
 
 export default connect(mapStateToProps)(ContactList);

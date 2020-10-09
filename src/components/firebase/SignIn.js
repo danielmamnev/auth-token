@@ -13,7 +13,24 @@ function SignIn({ auth, dispatch }) {
       );
   }, []);
 
+  var db = firebase.firestore();
+  console.log('auth', auth.user);
+  // useEffect(() => {
+  //   db.collection(`users/${auth.user.uid}/contacts`)
+  //     .get()
+  //     .then((snapshot) => {
+  //       const data = snapshot.docs.map((d) => d.data());
+  //       dispatch({ type: 'LOAD_CONTACTS', payload: data });
+  //     });
+  // }, []);
+
   function verifyUser() {
+    db.collection(`users/${auth.user.uid}/contacts`)
+      .get()
+      .then((snapshot) => {
+        const data = snapshot.docs.map((d) => d.data());
+        dispatch({ type: 'LOAD_CONTACTS', payload: data });
+      });
     var docRef = firebase.firestore().collection('users').doc(auth.user.uid);
     docRef
       .get()
