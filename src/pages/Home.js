@@ -63,16 +63,6 @@ function Home({ auth, dispatch }) {
   };
 
   if (auth.user) {
-    // firebase
-    //   .firestore()
-    //   .collection('users')
-    //   .doc(auth.user.uid)
-    //   .collection('contacts')
-    //   .get()
-    //   .then((snapshot) => {
-    //     console.log(snapshot);
-    //   });
-
     return (
       <div className="container">
         <div className="row">
