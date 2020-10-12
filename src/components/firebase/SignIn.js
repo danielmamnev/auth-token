@@ -14,7 +14,6 @@ function SignIn({ auth, dispatch }) {
   }, []);
 
   var db = firebase.firestore();
-  console.log('auth', auth.user);
   // useEffect(() => {
   //   db.collection(`users/${auth.user.uid}/contacts`)
   //     .get()
