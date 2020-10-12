@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import firebase from 'firebase';
-import { connect, shallowEqual } from 'react-redux';
+import { connect } from 'react-redux';
 import { Button, Card, Modal, Form } from 'react-bootstrap';
 
-function ContactList({ auth, contacts }) {
+function ContactList({ auth, contacts, dispatch }) {
   const [show, setShow] = useState({});
   const [edit, setEdit] = useState({
     firstname: '',
@@ -25,11 +25,15 @@ function ContactList({ auth, contacts }) {
     setShow({ ...show, [c]: true });
   };
 
+  const showDeleteModal = (c) => {
+    setShow({ ...show, [c]: true });
+  };
+
   const onChange = (e) => {
     setEdit({ ...edit, [e.target.name]: e.target.value });
   };
 
-  function updateCustomer(docId) {
+  function updateContact(docId) {
     console.log('docId', docId);
 
     firebase
@@ -50,6 +54,28 @@ function ContactList({ auth, contacts }) {
         console.log('Contact successfully updated!');
       });
   }
+  function deleteContact(docId) {
+    firebase
+      .firestore()
+      .collection('users')
+      .doc(auth.user.uid)
+      .collection('contacts')
+      .doc(docId)
+      .delete()
+      .then(function () {
+        console.log('Contact succesfully deleted!');
+      });
+
+    firebase
+      .firestore()
+      .collection(`users/${auth.user.uid}/contacts`)
+      .get()
+      .then((snapshot) => {
+        const data = snapshot.docs.map((d) => d.data());
+        dispatch({ type: 'LOAD_CONTACTS', payload: data });
+      });
+    setShow(false);
+  }
 
   if (contacts == null) {
     return <div className="p-4">...Loading Contacts...</div>;
@@ -67,10 +93,15 @@ function ContactList({ auth, contacts }) {
                 >
                   Edit
                 </Button>
+                <Button
+                  variant="danger"
+                  className="float-right"
+                  onClick={() => showDeleteModal('delete' + contact.id)}
+                >
+                  Delete
+                </Button>
               </Card.Header>
               <Card.Body>{contact.phone}</Card.Body>
-
-              {contact.firstname}
             </Card>
             <Modal show={show[contact.id]}>
               <Modal.Body>
@@ -83,12 +114,36 @@ function ContactList({ auth, contacts }) {
                       defaultValue={contact.firstname}
                     />
                   </Form.Group>
-                  <Form.Group controlId="firstname">
+                  <Form.Group controlId="lastname">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control
                       name="lastname"
                       onChange={onChange}
                       defaultValue={contact.lastname}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="phone">
+                    <Form.Label>Phone</Form.Label>
+                    <Form.Control
+                      name="phone"
+                      onChange={onChange}
+                      defaultValue={contact.phone}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="email">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      name="email"
+                      onChange={onChange}
+                      defaultValue={contact.email}
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="profession">
+                    <Form.Label>Industry/Profession</Form.Label>
+                    <Form.Control
+                      name="profession"
+                      onChange={onChange}
+                      defaultValue={contact.profession}
                     />
                   </Form.Group>
                 </Form>
@@ -105,12 +160,28 @@ function ContactList({ auth, contacts }) {
                 <Button
                   variant="success"
                   onClick={() => {
-                    updateCustomer(contact.id);
+                    updateContact(contact.id);
                   }}
                 >
                   Update
                 </Button>
               </Modal.Footer>
+            </Modal>
+            <Modal show={show['delete' + contact.id]}>
+              <Modal.Header>
+                Delete contact {contact.firstname} {contact.lastname}?
+              </Modal.Header>
+              <Modal.Body>
+                <Button variant="secondary" onClick={() => setShow(false)}>
+                  Go Back
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => deleteContact(contact.id)}
+                >
+                  Delete
+                </Button>
+              </Modal.Body>
             </Modal>
           </div>
         ))}
