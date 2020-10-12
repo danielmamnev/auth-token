@@ -18,5 +18,6 @@ export function signIn() {
 export function signOut() {
   firebase.auth().signOut();
 }
+var storage = firebase.storage();
 
 export default firebase;

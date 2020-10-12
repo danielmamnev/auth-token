@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
 
 function Home({ auth, dispatch }) {
+  const [image, setImage] = useState();
   const [show, setShow] = useState(false);
   const [success, setSuccess] = useState(false);
   const [contact, setContact] = useState({
@@ -53,15 +54,32 @@ function Home({ auth, dispatch }) {
       })
       .then(setSuccess(true));
     // var db_contact = firebase.firestore().collection('users').doc(auth.user.uid).collection('contacts').where("firstname", "==", contact.firstname)
+    firebase
+      .firestore()
+      .collection(`users/${auth.user.uid}/contacts`)
+      .get()
+      .then((snapshot) => {
+        const data = snapshot.docs.map((d) => d.data());
+        dispatch({ type: 'LOAD_CONTACTS', payload: data });
+      });
+
     setContact({
       firstname: '',
       lastname: '',
       phone: '',
       email: '',
       profession: '',
+      owner: '',
     });
   };
 
+  const handleLoad = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  const uploadImage = () => {
+    firebase.storage().ref(image);
+  };
   if (auth.user) {
     return (
       <div className="container">
@@ -82,7 +100,7 @@ function Home({ auth, dispatch }) {
             >
               New Contact
             </Button>
-            <Modal show={show}>
+            <Modal show={show} onHide={() => setShow(false)}>
               <Modal.Header closeButton>
                 <Modal.Title>New Contact</Modal.Title>
               </Modal.Header>
@@ -95,6 +113,7 @@ function Home({ auth, dispatch }) {
                       name="firstname"
                       onChange={onChange}
                       value={contact.firstname}
+                      required
                     />
                   </Form.Group>
                   <Form.Group controlId="lastname">
@@ -103,6 +122,7 @@ function Home({ auth, dispatch }) {
                       name="lastname"
                       onChange={onChange}
                       value={contact.lastname}
+                      required
                     />
                   </Form.Group>
                   <Form.Group controlId="phone">
@@ -111,6 +131,7 @@ function Home({ auth, dispatch }) {
                       name="phone"
                       onChange={onChange}
                       value={contact.phone}
+                      required
                     />
                   </Form.Group>
                   <Form.Group controlId="email">
@@ -119,6 +140,7 @@ function Home({ auth, dispatch }) {
                       name="email"
                       onChange={onChange}
                       value={contact.email}
+                      required
                     />
                   </Form.Group>
                   <Form.Group controlId="profession">
@@ -127,6 +149,7 @@ function Home({ auth, dispatch }) {
                       name="profession"
                       onChange={onChange}
                       value={contact.profession}
+                      required
                     />
                   </Form.Group>
                 </Form>
@@ -142,13 +165,18 @@ function Home({ auth, dispatch }) {
                 >
                   Close
                 </Button>
-                <Button variant="primary" onClick={createContact}>
-                  Save changes
+                <Button type="submit" variant="primary" onClick={createContact}>
+                  Create Contact
                 </Button>
               </Modal.Footer>
             </Modal>
           </div>
         </div>
+        <p>Upload an Image</p>
+        <input name="file" type="file" onChange={handleLoad} />
+        <button type="submit" onClick={uploadImage}>
+          Upload
+        </button>
       </div>
     );
   } else {
