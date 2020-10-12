@@ -11,10 +11,17 @@ function ContactList({ auth, contacts }) {
     phone: '',
     email: '',
     profession: '',
-    id: 'balls',
   });
 
-  const showContactModal = (c) => {
+  const showContactModal = (c, data) => {
+    setEdit({
+      firstname: data.firstname,
+      lastname: data.lastname,
+      phone: data.phone,
+      email: data.email,
+      profession: data.profession,
+    });
+    console.log('data', data);
     setShow({ ...show, [c]: true });
   };
 
@@ -22,34 +29,41 @@ function ContactList({ auth, contacts }) {
     setEdit({ ...edit, [e.target.name]: e.target.value });
   };
 
-  console.log('editid', edit.id);
-  function updateCustomer() {
-    // firebase
-    //   .firestore()
-    //   .collection(`users/${auth.user.uid}/contacts/${edit.id}`)
-    //   .set({
-    //     firstname: edit.firstname,
-    //     lastname: edit.lastname,
-    //     phone: edit.phone,
-    //     email: edit.email,
-    //     profession: edit.profession,
-    //   });
+  function updateCustomer(docId) {
+    console.log('docId', docId);
+
+    firebase
+      .firestore()
+      .collection('users')
+      .doc(auth.user.uid)
+      .collection('contacts')
+      .doc(docId)
+      .set({
+        firstname: edit.firstname,
+        lastname: edit.lastname,
+        phone: edit.phone,
+        email: edit.email,
+        profession: edit.profession,
+        id: docId,
+      })
+      .then(function () {
+        console.log('Contact successfully updated!');
+      });
   }
 
   if (contacts == null) {
     return <div className="p-4">...Loading Contacts...</div>;
   } else {
-    console.log('contacts', contacts);
     return (
       <div className="p-4">
         {contacts.map((contact, i) => (
-          <div>
-            <Card key={i}>
+          <div key={i}>
+            <Card>
               <Card.Header>
                 {contact.firstname} {contact.lastname}
                 <Button
                   className="float-right"
-                  onClick={() => showContactModal(contact.id)}
+                  onClick={() => showContactModal(contact.id, contact)}
                 >
                   Edit
                 </Button>
@@ -66,7 +80,7 @@ function ContactList({ auth, contacts }) {
                     <Form.Control
                       name="firstname"
                       onChange={onChange}
-                      placeholder={contact.firstname}
+                      defaultValue={contact.firstname}
                     />
                   </Form.Group>
                   <Form.Group controlId="firstname">
@@ -77,12 +91,6 @@ function ContactList({ auth, contacts }) {
                       defaultValue={contact.lastname}
                     />
                   </Form.Group>
-                  <input
-                    name="id"
-                    value={contact.id}
-                    onChange={onChange}
-                    hidden
-                  />
                 </Form>
               </Modal.Body>
               <Modal.Footer>
@@ -97,7 +105,7 @@ function ContactList({ auth, contacts }) {
                 <Button
                   variant="success"
                   onClick={() => {
-                    updateCustomer();
+                    updateCustomer(contact.id);
                   }}
                 >
                   Update
