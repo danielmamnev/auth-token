@@ -5,9 +5,11 @@ import Modal from 'react-bootstrap/Modal';
 import firebase from '../firebase';
 import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
+import 'firebase/storage';
 
 function Home({ auth, dispatch }) {
   const [image, setImage] = useState();
+  const [noFile, setNoFile] = useState(true)
   const [show, setShow] = useState(false);
   const [success, setSuccess] = useState(false);
   const [contact, setContact] = useState({
@@ -17,6 +19,7 @@ function Home({ auth, dispatch }) {
     email: '',
     profession: '',
     owner: '',
+    imageURL: '',
   });
   useEffect(() => {
     return firebase
@@ -31,16 +34,23 @@ function Home({ auth, dispatch }) {
   };
 
   const createContact = () => {
-    const ref = firebase
+
+    if(image){
+    firebase.storage().ref(`images/${image.name}`).getDownloadURL().then(function(url) {
+      console.log('url is: ', url)
+
+      setContact({ imageURL: url})
+      
+      const ref = firebase
       .firestore()
       .collection('users')
       .doc(auth.user.uid)
       .collection('contacts')
       .doc();
-    console.log('ref.id', ref.id);
+      
+      console.log('ref.id', ref.id);
 
-    ref
-      .set({
+      ref.set({
         firstname: contact.firstname,
         lastname: contact.lastname,
         phone: contact.phone,
@@ -48,12 +58,40 @@ function Home({ auth, dispatch }) {
         profession: contact.profession,
         owner: contact.owner,
         id: ref.id,
+        imageURL: url,
       })
       .then(() => {
         console.log('Contact Succesfully Created', ref.id);
       })
       .then(setSuccess(true));
-    // var db_contact = firebase.firestore().collection('users').doc(auth.user.uid).collection('contacts').where("firstname", "==", contact.firstname)
+    }) } else {
+      const ref = firebase
+      .firestore()
+      .collection('users')
+      .doc(auth.user.uid)
+      .collection('contacts')
+      .doc();
+      
+      console.log('ref.id', ref.id);
+
+      ref.set({
+        firstname: contact.firstname,
+        lastname: contact.lastname,
+        phone: contact.phone,
+        email: contact.email,
+        profession: contact.profession,
+        owner: contact.owner,
+        id: ref.id,
+        imageURL: 'none',
+      })
+      .then(() => {
+        console.log('Contact Succesfully Created', ref.id);
+      })
+      .then(setSuccess(true));
+    }
+    
+
+  
     firebase
       .firestore()
       .collection(`users/${auth.user.uid}/contacts`)
@@ -70,15 +108,25 @@ function Home({ auth, dispatch }) {
       email: '',
       profession: '',
       owner: '',
+      imageURL: '',
     });
   };
 
   const handleLoad = (e) => {
+    
     setImage(e.target.files[0]);
+  console.log(e.target.files[0])
+  firebase.storage().ref(`images/${e.target.files[0].name}`).put(e.target.files[0]).then(function(snapshot) {
+    console.log('Uploaded!')})
   };
-
+  
   const uploadImage = () => {
-    firebase.storage().ref(image);
+    
+     
+      
+      
+    
+   
   };
   if (auth.user) {
     return (
@@ -152,6 +200,14 @@ function Home({ auth, dispatch }) {
                       required
                     />
                   </Form.Group>
+                  <Form.Group controlId="profession">
+                    <Form.Label>Contact Image</Form.Label>
+                    <Form.Control
+                      type="file"
+                      name="imageURL"
+                      onChange={handleLoad}
+                    />
+                  </Form.Group>
                 </Form>
               </Modal.Body>
 
@@ -172,11 +228,6 @@ function Home({ auth, dispatch }) {
             </Modal>
           </div>
         </div>
-        <p>Upload an Image</p>
-        <input name="file" type="file" onChange={handleLoad} />
-        <button type="submit" onClick={uploadImage}>
-          Upload
-        </button>
       </div>
     );
   } else {
