@@ -90,17 +90,20 @@ function ContactList({ auth, contacts, dispatch }) {
                 <div className="float-left">{contact.firstname} {contact.lastname}</div>
                 {contact.imageURL !== 'none' && <div className="float-right pr-2"><img src={contact.imageURL} alt={contact.firstname} height="50px" width="60px" className="rounded-circle"/></div>}
               </Card.Header>
-              <Card.Body><div>{contact.phone}</div><div><Button
+              <Card.Body>
+                <div>{contact.phone}</div>
+                <div>
+                  <Button
                   className="float-right"
                   onClick={() => showContactModal(contact.id, contact)}
                 >
                   Edit
-                </Button>
-                <Button
+                  </Button>
+                  <Button
                   variant="danger"
                   className="float-right"
                   onClick={() => showDeleteModal('delete' + contact.id)}
-                >
+                  >
                   Delete
                 </Button></div></Card.Body>
             </Card>

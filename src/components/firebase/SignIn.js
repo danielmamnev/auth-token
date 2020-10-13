@@ -14,14 +14,7 @@ function SignIn({ auth, dispatch }) {
   }, []);
 
   var db = firebase.firestore();
-  // useEffect(() => {
-  //   db.collection(`users/${auth.user.uid}/contacts`)
-  //     .get()
-  //     .then((snapshot) => {
-  //       const data = snapshot.docs.map((d) => d.data());
-  //       dispatch({ type: 'LOAD_CONTACTS', payload: data });
-  //     });
-  // }, []);
+  
 
   function verifyUser() {
     db.collection(`users/${auth.user.uid}/contacts`)
@@ -35,9 +28,7 @@ function SignIn({ auth, dispatch }) {
       .get()
       .then(function (doc) {
         if (doc.exists) {
-          // console.log('Document data:', doc.data());
         } else {
-          // doc.data() will be undefined in this case
           firebase.firestore().collection('users').doc(auth.user.uid).set({
             firstname: auth.user.displayName,
           });
@@ -61,11 +52,10 @@ function SignIn({ auth, dispatch }) {
         ) : (
           ''
         )}
-        <div className="d-flex mt-auto">
-          <img alt="profile" src={auth.user.photoURL} height="30" />
+        <div className="d-flex mt-auto mb-auto">
+          <img alt="profile" src={auth.user.photoURL} height="30"/>
           <p className="pl-2 pr-2">
             {auth.user.displayName}
-            {/* {console.log('auth', auth.user)} */}
           </p>
           <Button onClick={signOut}>Sign Out</Button>
         </div>
