@@ -6,6 +6,7 @@ import firebase from '../firebase';
 import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
 import 'firebase/storage';
+import SendEmail from '../components/SendEmail'
 
 function Home({ auth, dispatch }) {
   const [image, setImage] = useState();
@@ -228,6 +229,7 @@ function Home({ auth, dispatch }) {
             </Modal>
           </div>
         </div>
+      <SendEmail />
       </div>
     );
   } else {
