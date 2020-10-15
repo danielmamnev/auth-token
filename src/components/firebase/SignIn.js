@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import firebase, { signIn, signOut } from '../../firebase';
+import { checkSignInStatus } from '../../gmail/Auth';
 
 function SignIn({ auth, dispatch }) {
   const [newUser, setNewUser] = useState(false);
@@ -14,7 +15,6 @@ function SignIn({ auth, dispatch }) {
   }, []);
 
   var db = firebase.firestore();
-  
 
   function verifyUser() {
     db.collection(`users/${auth.user.uid}/contacts`)
@@ -43,6 +43,7 @@ function SignIn({ auth, dispatch }) {
 
   if (auth.user) {
     verifyUser();
+
     return (
       <>
         {newUser ? (
@@ -53,10 +54,8 @@ function SignIn({ auth, dispatch }) {
           ''
         )}
         <div className="d-flex mt-auto mb-auto">
-          <img alt="profile" src={auth.user.photoURL} height="30"/>
-          <p className="pl-2 pr-2">
-            {auth.user.displayName}
-          </p>
+          <img alt="profile" src={auth.user.photoURL} height="30" />
+          <p className="pl-2 pr-2">{auth.user.displayName}</p>
           <Button onClick={signOut}>Sign Out</Button>
         </div>
       </>

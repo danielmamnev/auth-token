@@ -5,4 +5,5 @@ import reducer from './reducer';
 export default combineReducers({
   auth: authReducer,
   data: reducer,
+  selected: reducer,
 });

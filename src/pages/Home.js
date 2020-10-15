@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import firebase from '../firebase';
+import firebase, { signIn } from '../firebase';
 import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
 import 'firebase/storage';
-import SendEmail from '../components/SendEmail'
+import SendEmail from '../components/SendEmail';
+// GMAIL API SCRIPT
+import {
+  mountScripts,
+  checkSignInStatus,
+  initGmailClient,
+} from '../gmail/Auth.jsx';
+import { getValidEmails } from '../gmail/Utils';
+import { sendMessage } from '../gmail/Send';
 
 function Home({ auth, dispatch }) {
   const [image, setImage] = useState();
-  const [noFile, setNoFile] = useState(true)
+  const [noFile, setNoFile] = useState(true);
   const [show, setShow] = useState(false);
   const [success, setSuccess] = useState(false);
   const [contact, setContact] = useState({
@@ -22,6 +30,33 @@ function Home({ auth, dispatch }) {
     owner: '',
     imageURL: '',
   });
+  // Initialize GMAIL API script
+  useEffect(() => {
+    mountScripts().then(init);
+  }, []);
+
+  function init() {
+    console.log('windowgapi', window.gapi);
+    window.gapi.load('client:auth2');
+  }
+
+  function sendEmailHandler() {
+    console.log('we got to sign in');
+
+    const validTo = getValidEmails('daniksk9@gmail.com danielmamnev@gmail.com');
+    console.log(validTo);
+    const headers = {
+      To: validTo.join(', '),
+      Subject: 'Dumb gmail test',
+    };
+    sendMessage({
+      headers,
+      body: 'bingo bango bongo',
+    }).then(function () {
+      console.log('CHECK YOUR INBOX');
+    });
+  }
+
   useEffect(() => {
     return firebase
       .auth()
@@ -35,64 +70,68 @@ function Home({ auth, dispatch }) {
   };
 
   const createContact = () => {
+    if (image) {
+      firebase
+        .storage()
+        .ref(`images/${image.name}`)
+        .getDownloadURL()
+        .then(function (url) {
+          console.log('url is: ', url);
 
-    if(image){
-    firebase.storage().ref(`images/${image.name}`).getDownloadURL().then(function(url) {
-      console.log('url is: ', url)
+          setContact({ imageURL: url });
 
-      setContact({ imageURL: url})
-      
+          const ref = firebase
+            .firestore()
+            .collection('users')
+            .doc(auth.user.uid)
+            .collection('contacts')
+            .doc();
+
+          console.log('ref.id', ref.id);
+
+          ref
+            .set({
+              firstname: contact.firstname,
+              lastname: contact.lastname,
+              phone: contact.phone,
+              email: contact.email,
+              profession: contact.profession,
+              owner: contact.owner,
+              id: ref.id,
+              imageURL: url,
+            })
+            .then(() => {
+              console.log('Contact Succesfully Created', ref.id);
+            })
+            .then(setSuccess(true));
+        });
+    } else {
       const ref = firebase
-      .firestore()
-      .collection('users')
-      .doc(auth.user.uid)
-      .collection('contacts')
-      .doc();
-      
+        .firestore()
+        .collection('users')
+        .doc(auth.user.uid)
+        .collection('contacts')
+        .doc();
+
       console.log('ref.id', ref.id);
 
-      ref.set({
-        firstname: contact.firstname,
-        lastname: contact.lastname,
-        phone: contact.phone,
-        email: contact.email,
-        profession: contact.profession,
-        owner: contact.owner,
-        id: ref.id,
-        imageURL: url,
-      })
-      .then(() => {
-        console.log('Contact Succesfully Created', ref.id);
-      })
-      .then(setSuccess(true));
-    }) } else {
-      const ref = firebase
-      .firestore()
-      .collection('users')
-      .doc(auth.user.uid)
-      .collection('contacts')
-      .doc();
-      
-      console.log('ref.id', ref.id);
-
-      ref.set({
-        firstname: contact.firstname,
-        lastname: contact.lastname,
-        phone: contact.phone,
-        email: contact.email,
-        profession: contact.profession,
-        owner: contact.owner,
-        id: ref.id,
-        imageURL: 'none',
-      })
-      .then(() => {
-        console.log('Contact Succesfully Created', ref.id);
-      })
-      .then(setSuccess(true));
+      ref
+        .set({
+          firstname: contact.firstname,
+          lastname: contact.lastname,
+          phone: contact.phone,
+          email: contact.email,
+          profession: contact.profession,
+          owner: contact.owner,
+          id: ref.id,
+          imageURL: 'none',
+        })
+        .then(() => {
+          console.log('Contact Succesfully Created', ref.id);
+        })
+        .then(setSuccess(true));
     }
-    
 
-  
     firebase
       .firestore()
       .collection(`users/${auth.user.uid}/contacts`)
@@ -114,21 +153,18 @@ function Home({ auth, dispatch }) {
   };
 
   const handleLoad = (e) => {
-    
     setImage(e.target.files[0]);
-  console.log(e.target.files[0])
-  firebase.storage().ref(`images/${e.target.files[0].name}`).put(e.target.files[0]).then(function(snapshot) {
-    console.log('Uploaded!')})
+    console.log(e.target.files[0]);
+    firebase
+      .storage()
+      .ref(`images/${e.target.files[0].name}`)
+      .put(e.target.files[0])
+      .then(function (snapshot) {
+        console.log('Uploaded!');
+      });
   };
-  
-  const uploadImage = () => {
-    
-     
-      
-      
-    
-   
-  };
+
+  const uploadImage = () => {};
   if (auth.user) {
     return (
       <div className="container">
@@ -149,6 +185,8 @@ function Home({ auth, dispatch }) {
             >
               New Contact
             </Button>
+            <SendEmail />
+
             <Modal show={show} onHide={() => setShow(false)}>
               <Modal.Header closeButton>
                 <Modal.Title>New Contact</Modal.Title>
@@ -229,7 +267,7 @@ function Home({ auth, dispatch }) {
             </Modal>
           </div>
         </div>
-      <SendEmail />
+        <SendEmail />
       </div>
     );
   } else {

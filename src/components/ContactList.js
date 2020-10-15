@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import firebase from 'firebase';
 import { connect } from 'react-redux';
 import { Button, Card, Modal, Form } from 'react-bootstrap';
@@ -12,6 +12,7 @@ function ContactList({ auth, contacts, dispatch }) {
     email: '',
     profession: '',
   });
+  const [selected, setSelected] = useState([]);
 
   const showContactModal = (c, data) => {
     setEdit({
@@ -76,36 +77,75 @@ function ContactList({ auth, contacts, dispatch }) {
       });
     setShow(false);
   }
+  function addSelected(value, email) {
+    if (value === true) {
+      setSelected([...selected, email]);
+      // console.log('selected!', selected);
+    } else {
+      let emailIndex = selected.indexOf(email);
+      let selectedArray = selected;
+      let deleted = selectedArray.splice(emailIndex, 1);
+      setSelected(selectedArray);
+      console.log('removed!', selected);
+    }
+  }
+  useEffect(() => {
+    dispatch({ type: 'LOAD_SELECTED', payload: selected });
+  }, [selected]);
 
   if (contacts == null) {
     return <div className="p-4">...Loading Contacts...</div>;
   } else {
     return (
       <div className="p-4">
+        Contacts ({contacts.length})
         {contacts.map((contact, i) => (
           <div key={i}>
             <Card>
               <Card.Header>
-                
-                <div className="float-left">{contact.firstname} {contact.lastname}</div>
-                {contact.imageURL !== 'none' && <div className="float-right pr-2"><img src={contact.imageURL} alt={contact.firstname} height="50px" width="60px" className="rounded-circle"/></div>}
+                <div className="float-left">
+                  <input
+                    type="checkbox"
+                    name="check"
+                    onChange={(e) =>
+                      addSelected(e.target.checked, contact.email)
+                    }
+                    className="p-1"
+                  />
+                </div>
+                <div>
+                  {contact.firstname} {contact.lastname}
+                </div>
+                {contact.imageURL !== 'none' && (
+                  <div className="float-right pr-2">
+                    <img
+                      src={contact.imageURL}
+                      alt={contact.firstname}
+                      height="50px"
+                      width="60px"
+                      className="rounded-circle"
+                    />
+                  </div>
+                )}
               </Card.Header>
               <Card.Body>
                 <div>{contact.phone}</div>
                 <div>
                   <Button
-                  className="float-right"
-                  onClick={() => showContactModal(contact.id, contact)}
-                >
-                  Edit
+                    className="float-right"
+                    onClick={() => showContactModal(contact.id, contact)}
+                  >
+                    Edit
                   </Button>
                   <Button
-                  variant="danger"
-                  className="float-right"
-                  onClick={() => showDeleteModal('delete' + contact.id)}
+                    variant="danger"
+                    className="float-right"
+                    onClick={() => showDeleteModal('delete' + contact.id)}
                   >
-                  Delete
-                </Button></div></Card.Body>
+                    Delete
+                  </Button>
+                </div>
+              </Card.Body>
             </Card>
             <Modal show={show[contact.id]}>
               <Modal.Body>
