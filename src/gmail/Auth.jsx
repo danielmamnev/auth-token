@@ -50,7 +50,7 @@ export const initGmailClient = (apiKey, clientId) => {
   
 };
 
-export const checkSignInStatus = () => {
+export const checkSignInStatus = (user) => {
   return new Promise((resolve, reject) => {
     initGmailClient()
       .then((_) => {
@@ -69,7 +69,11 @@ export const checkSignInStatus = () => {
           console.log('AUTH_SUCCESS from checkSignInStatus');
 
           resolve(googleAuthInstance.currentUser.Ab);
-          console.log(gapi)
+          console.log(window.gapi.auth2)
+          if(googleAuthInstance.currentUser.le.nt.Wt !== user){
+          signIn();
+        }
+          console.log('user', googleAuthInstance.currentUser)
         } else {
           // reject();
           signIn();

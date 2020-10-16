@@ -53,7 +53,7 @@ export const sendMessage = ({ headers, body }) => {
   const encodedEmail = unescape(encodeURIComponent(email));
 
   return window.gapi.client.gmail.users.messages.send({
-    userId: process.env.REACT_APP_GMAIL_USER_ID,
+    userId: 'me',
     resource: {
       raw: window.btoa(encodedEmail).replace(/\+/g, '-').replace(/\//g, '_'),
     },
