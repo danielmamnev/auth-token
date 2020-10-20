@@ -52,6 +52,7 @@ export const sendMessage = ({ headers, body }) => {
   email += `\r\n<html><body>${body}</body></html>`;
   const encodedEmail = unescape(encodeURIComponent(email));
 
+  console.log(window.gapi.client.gmail.users.messages);
   return window.gapi.client.gmail.users.messages.send({
     userId: 'me',
     resource: {

@@ -12,11 +12,14 @@ export const config = {
 
 firebase.initializeApp(config);
 
-export function signIn() {
-  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
-}
 export function signOut() {
-  firebase.auth().signOut();
+  // firebase.getInstance().signOut();
+  firebase
+    .auth()
+    .signOut()
+    .then(() => {
+      console.log('signed out!');
+    });
 }
 export const storage = firebase.storage().ref();
 

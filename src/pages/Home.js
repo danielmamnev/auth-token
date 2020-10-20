@@ -7,16 +7,13 @@ import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
 import 'firebase/storage';
 import SendEmail from '../components/SendEmail';
+import Test from '../components/Test';
 // GMAIL API SCRIPT
-import {
-  mountScripts,
-  checkSignInStatus,
-  initGmailClient,
-} from '../gmail/Auth.jsx';
+import { mountScripts, checkSignInStatus, initClient } from '../gmail/Auth.jsx';
 import { getValidEmails } from '../gmail/Utils';
 import { sendMessage } from '../gmail/Send';
 
-function Home({ auth, dispatch }) {
+function Home({ auth, dispatch, accessToken }) {
   const [image, setImage] = useState();
   const [noFile, setNoFile] = useState(true);
   const [show, setShow] = useState(false);
@@ -30,39 +27,11 @@ function Home({ auth, dispatch }) {
     owner: '',
     imageURL: '',
   });
-  // Initialize GMAIL API script
+
   useEffect(() => {
-    mountScripts().then(init);
-  }, []);
-
-  function init() {
-    console.log('windowgapi', window.gapi);
-    window.gapi.load('client:auth2');
-  }
-
-  function sendEmailHandler() {
-    console.log('we got to sign in');
-
-    const validTo = getValidEmails('daniksk9@gmail.com danielmamnev@gmail.com');
-    console.log(validTo);
-    const headers = {
-      To: validTo.join(', '),
-      Subject: 'Dumb gmail test',
-    };
-    sendMessage({
-      headers,
-      body: 'bingo bango bongo',
-    }).then(function () {
-      console.log('CHECK YOUR INBOX');
+    return firebase.auth().onAuthStateChanged((user) => {
+      dispatch({ type: 'AUTH_USER', payload: user });
     });
-  }
-
-  useEffect(() => {
-    return firebase
-      .auth()
-      .onAuthStateChanged((user) =>
-        dispatch({ type: 'AUTH_USER', payload: user })
-      );
   }, []);
 
   const onChange = (e) => {
@@ -267,7 +236,7 @@ function Home({ auth, dispatch }) {
             </Modal>
           </div>
         </div>
-        <SendEmail />
+        <Test />
       </div>
     );
   } else {
@@ -281,6 +250,7 @@ function Home({ auth, dispatch }) {
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
+  accessToken: state.access_token,
 });
 
 export default connect(mapStateToProps)(Home);

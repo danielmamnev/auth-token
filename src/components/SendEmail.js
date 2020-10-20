@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { Accordion, Button, CloseButton, Form, Modal } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { checkSignInStatus } from '../gmail/Auth.jsx';
+import { checkSignInStatus, initGmailClient } from '../gmail/Auth.jsx';
 import { getValidEmails } from '../gmail/Utils';
 import { sendMessage } from '../gmail/Send';
 
-function SendEmail({ selected, auth }) {
+function SendEmail({ selected, auth, accessToken }) {
   const [show, setShow] = useState([{ modal: false, emailList: false }]);
   const [emailContent, setEmailContent] = useState({ subject: '', body: '' });
   function composeEmail() {
     // check if user has enabled gmail API
-    checkSignInStatus(auth.user.email);
-    setShow({ modal: true });
-    console.log(auth.user.email);
-  }
-  console.log(show.emailList);
+    // initGmailClient(accessToken);
+    // window.gapi.client.setToken({ access_token: accessToken });
 
+    setShow({ modal: true });
+  }
+  console.log('access token', accessToken);
   const onChange = (e) => {
     setEmailContent({ ...emailContent, [e.target.name]: e.target.value });
   };
@@ -29,12 +29,35 @@ function SendEmail({ selected, auth }) {
       To: validTo.join(', '),
       Subject: emailContent.subject,
     };
-    sendMessage({
-      headers,
-      body: emailContent.body,
-    }).then(function () {
-      console.log('e-mail sent!');
-    });
+    console.log(auth.user.email);
+    const message =
+      `From: ${auth.user.email}.\r\n` +
+      `To: ${validTo}\r\n` +
+      `Subject: ${emailContent.subject}\r\n\r\n` +
+      `${emailContent.body}`;
+
+    const encodedMessage = btoa(message);
+
+    const reallyEncodedMessage = encodedMessage
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    console.log(
+      'send - isSignedin?',
+      window.gapi.auth2.getAuthInstance().isSignedIn.get()
+    );
+
+    window.gapi.client.gmail.users.messages
+      .send({
+        userId: 'me',
+        resource: {
+          raw: reallyEncodedMessage,
+        },
+      })
+      .then(() => {
+        console.log('email sent');
+      });
   }
 
   let button;
@@ -108,6 +131,7 @@ function SendEmail({ selected, auth }) {
 const mapStateToProps = (state) => ({
   selected: state.selected.selected,
   auth: state.auth,
+  accessToken: state.access_token,
 });
 
 export default connect(mapStateToProps)(SendEmail);
