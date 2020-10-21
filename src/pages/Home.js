@@ -7,11 +7,10 @@ import { connect } from 'react-redux';
 import ContactList from '../components/ContactList';
 import 'firebase/storage';
 import SendEmail from '../components/SendEmail';
-import Test from '../components/Test';
+import '../style.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrow } from '@fortawesome/free-solid-svg-icons';
 // GMAIL API SCRIPT
-import { mountScripts, checkSignInStatus, initClient } from '../gmail/Auth.jsx';
-import { getValidEmails } from '../gmail/Utils';
-import { sendMessage } from '../gmail/Send';
 
 function Home({ auth, dispatch, accessToken }) {
   const [image, setImage] = useState();
@@ -122,18 +121,21 @@ function Home({ auth, dispatch, accessToken }) {
   };
 
   const handleLoad = (e) => {
-    setImage(e.target.files[0]);
-    console.log(e.target.files[0]);
-    firebase
-      .storage()
-      .ref(`images/${e.target.files[0].name}`)
-      .put(e.target.files[0])
-      .then(function (snapshot) {
-        console.log('Uploaded!');
-      });
+    if (!image) {
+      setImage(e.target.files[0]);
+      console.log(e.target.files[0]);
+      firebase
+        .storage()
+        .ref(`images/${e.target.files[0].name}`)
+        .put(e.target.files[0])
+        .then(function (snapshot) {
+          console.log('Uploaded!');
+        });
+    } else {
+      // if an image has already been chosen, and user is cancelling choosing an image
+      setImage(undefined);
+    }
   };
-
-  const uploadImage = () => {};
   if (auth.user) {
     return (
       <div className="container">
@@ -142,19 +144,22 @@ function Home({ auth, dispatch, accessToken }) {
             <ContactList />
           </div>
           <div className="col-sm-6 text-center">
-            <Button
-              className="m-4"
-              variant="primary"
-              onClick={() => {
-                setShow(true);
-                setContact({
-                  owner: auth.user.uid,
-                });
-              }}
-            >
-              New Contact
-            </Button>
-            <SendEmail />
+            <div className="p-4 d-inline-flex">
+              <Button
+                className="m-4"
+                variant="primary"
+                onClick={() => {
+                  setShow(true);
+                  setContact({
+                    owner: auth.user.uid,
+                  });
+                }}
+              >
+                New Contact
+              </Button>
+
+              <SendEmail />
+            </div>
 
             <Modal show={show} onHide={() => setShow(false)}>
               <Modal.Header closeButton>
@@ -236,13 +241,14 @@ function Home({ auth, dispatch, accessToken }) {
             </Modal>
           </div>
         </div>
-        <Test />
       </div>
     );
   } else {
     return (
       <div className="text-center">
-        <p className="m-4">Please sign in</p>
+        <h1 className="main-header">Welcome to Auth-Token</h1>
+        {/* <h2>Your Rolodex is now on steroids</h2> */}
+        <h3>Sign in to begin</h3>
       </div>
     );
   }

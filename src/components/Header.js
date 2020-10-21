@@ -5,7 +5,11 @@ import SignIn from './firebase/SignIn';
 export default function Header() {
   return (
     <div>
-      <Navbar bg="light" variant="dark" className="justify-content-end">
+      <Navbar
+        bg="light"
+        variant="dark"
+        className="d-flex justify-content-between"
+      >
         <SignIn />
       </Navbar>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import firebase from 'firebase';
 import { connect } from 'react-redux';
 import { Button, Card, Modal, Form } from 'react-bootstrap';
+import '../style.css';
 
 function ContactList({ auth, contacts, dispatch }) {
   const [show, setShow] = useState({});
@@ -113,23 +114,27 @@ function ContactList({ auth, contacts, dispatch }) {
                     className="p-1"
                   />
                 </div>
-                <div>
-                  {contact.firstname} {contact.lastname}
+                <div className="justify-content-between">
+                  <span className="pl-3">
+                    {contact.firstname} {contact.lastname}
+                  </span>
+                  {contact.imageURL !== 'none' ? (
+                    <div className="float-right pr-2">
+                      <img
+                        src={contact.imageURL}
+                        alt={contact.firstname}
+                        className="rounded-image"
+                      />
+                    </div>
+                  ) : (
+                    <div className="float-right pr-2">
+                      <h4 className="contact-icon">{contact.firstname[0]}</h4>
+                    </div>
+                  )}
                 </div>
-                {contact.imageURL !== 'none' && (
-                  <div className="float-right pr-2">
-                    <img
-                      src={contact.imageURL}
-                      alt={contact.firstname}
-                      height="50px"
-                      width="60px"
-                      className="rounded-circle"
-                    />
-                  </div>
-                )}
               </Card.Header>
               <Card.Body>
-                <div>{contact.phone}</div>
+                <div>{contact.profession}</div>
                 <div>
                   <Button
                     className="float-right"

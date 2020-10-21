@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import firebase, { signOut } from '../../firebase';
-import { checkSignInStatus } from '../../gmail/Auth';
 
 const provider = new firebase.auth.GoogleAuthProvider();
 provider.addScope('https://mail.google.com/');
@@ -21,36 +20,26 @@ function SignIn({ auth, dispatch, accessToken }) {
     let at;
     firebase
       .auth()
-      .setPersistence('none')
+      .setPersistence('local')
       .then(function () {
-        fbAuth
-          .signInWithPopup(provider)
-          .then((result) => {
-            at = result.credential.accessToken;
-            dispatch({
-              type: 'ACC_TOK',
-              payload: result.credential.accessToken,
+        fbAuth.signInWithPopup(provider).then(() => {
+          window.gapi.client
+            .init({
+              apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+              clientId: process.env.REACT_APP_GMAIL_FIREBASE_CLIENT_ID,
+              discoveryDocs: [
+                'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest',
+              ],
+              scope: 'https://mail.google.com/',
+            })
+            .then(function () {
+              const GoogleAuth = window.gapi.auth2.getAuthInstance();
+              if (!window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                GoogleAuth.signIn();
+              }
+              // Listen for sign-in state changes.
             });
-            // console.log('this is popup result', result.credential.accessToken);
-          })
-          .then(() => {
-            window.gapi.client
-              .init({
-                apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-                clientId: process.env.REACT_APP_GMAIL_FIREBASE_CLIENT_ID,
-                discoveryDocs: [
-                  'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest',
-                ],
-                scope: 'https://mail.google.com/',
-              })
-              .then(function () {
-                const GoogleAuth = window.gapi.auth2.getAuthInstance();
-                if (!window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                  GoogleAuth.signIn();
-                }
-                // Listen for sign-in state changes.
-              });
-          });
+        });
       });
   }
 
@@ -82,12 +71,12 @@ function SignIn({ auth, dispatch, accessToken }) {
   }
 
   function signOutHandler() {
-    const GoogleAuth = window.gapi.auth2.getAuthInstance();
-    if (window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
-      GoogleAuth.signOut();
-    }
-    // firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    // const GoogleAuth = window.gapi.auth2.getAuthInstance();
+    // GoogleAuth.signOut();
+
     signOut();
+
+    console.log(window.gapi.auth2);
   }
 
   if (auth.user) {
@@ -105,6 +94,8 @@ function SignIn({ auth, dispatch, accessToken }) {
         <div className="d-flex mt-auto mb-auto">
           <img alt="profile" src={auth.user.photoURL} height="30" />
           <p className="pl-2 pr-2">{auth.user.displayName}</p>
+        </div>
+        <div className="float-right">
           <Button onClick={signOutHandler}>Sign Out</Button>
         </div>
       </>

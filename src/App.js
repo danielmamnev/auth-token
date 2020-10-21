@@ -30,7 +30,6 @@ function App() {
 
   const loadClientWhenGapiReady = (script) => {
     console.log('Trying To Load Client!');
-    console.log(script);
     if (script.getAttribute('gapi_processed')) {
       console.log('Client is ready! Now you can access gapi. :)');
       window.gapi.load('client', () => {
@@ -51,33 +50,6 @@ function App() {
     loadGmailApi();
   }, []);
 
-  firebase.auth().onAuthStateChanged((user) => {
-    // console.log(window.gapi);
-    // Make sure there is a valid user object
-    //____________________________________________________________
-    console.log('AUTH STATE CHANGE TRIGGERED');
-
-    window.gapi.client
-      .init({
-        apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-        clientId: process.env.REACT_APP_GMAIL_FIREBASE_CLIENT_ID,
-        discoveryDocs: [
-          'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest',
-        ],
-        scope: 'https://mail.google.com/',
-      })
-      .then(function () {
-        // const GoogleAuth = window.gapi.auth2.getAuthInstance();
-        // if (!window.gapi.auth2.getAuthInstance().isSignedIn.get()) {
-        //   GoogleAuth.signIn();
-        // }
-        // console.log(
-        //   'balls',
-        //   window.gapi.auth2.getAuthInstance().isSignedIn.get()
-        // );
-        // Listen for sign-in state changes.
-      });
-  });
   return (
     <Provider store={store}>
       <Header />

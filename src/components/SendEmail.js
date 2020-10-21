@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
-import { Accordion, Button, CloseButton, Form, Modal } from 'react-bootstrap';
+import { Button, CloseButton, Form, Modal } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { checkSignInStatus, initGmailClient } from '../gmail/Auth.jsx';
 import { getValidEmails } from '../gmail/Utils';
-import { sendMessage } from '../gmail/Send';
 
 function SendEmail({ selected, auth, accessToken }) {
-  const [show, setShow] = useState([{ modal: false, emailList: false }]);
+  const [show, setShow] = useState([
+    { modal: false, emailList: false, success: false },
+  ]);
   const [emailContent, setEmailContent] = useState({ subject: '', body: '' });
   function composeEmail() {
-    // check if user has enabled gmail API
-    // initGmailClient(accessToken);
-    // window.gapi.client.setToken({ access_token: accessToken });
-
     setShow({ modal: true });
   }
-  console.log('access token', accessToken);
   const onChange = (e) => {
     setEmailContent({ ...emailContent, [e.target.name]: e.target.value });
   };
@@ -35,19 +30,15 @@ function SendEmail({ selected, auth, accessToken }) {
       `To: ${validTo}\r\n` +
       `Subject: ${emailContent.subject}\r\n\r\n` +
       `${emailContent.body}`;
-
     const encodedMessage = btoa(message);
-
     const reallyEncodedMessage = encodedMessage
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
-
     console.log(
       'send - isSignedin?',
       window.gapi.auth2.getAuthInstance().isSignedIn.get()
     );
-
     window.gapi.client.gmail.users.messages
       .send({
         userId: 'me',
@@ -57,9 +48,11 @@ function SendEmail({ selected, auth, accessToken }) {
       })
       .then(() => {
         console.log('email sent');
+      })
+      .then(() => {
+        setShow({ modal: false });
       });
   }
-
   let button;
   if (show.emailList) {
     button = (
@@ -77,7 +70,9 @@ function SendEmail({ selected, auth, accessToken }) {
 
   return (
     <div>
-      <Button onClick={composeEmail}>Send an Email!</Button>
+      <Button onClick={composeEmail} className="m-4">
+        Send an Email!
+      </Button>
       <Modal show={show.modal}>
         <Modal.Header>
           <div className="float-left">
@@ -113,7 +108,12 @@ function SendEmail({ selected, auth, accessToken }) {
               </Form.Group>
               <Form.Group>
                 <Form.Label>E-mail Body</Form.Label>
-                <Form.Control name="body" as="textarea" onChange={onChange} />
+                <Form.Control
+                  name="body"
+                  as="textarea"
+                  onChange={onChange}
+                  required
+                />
               </Form.Group>
               <Button onClick={sendEmailHandler}>Submit</Button>
             </Form>
